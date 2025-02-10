@@ -330,13 +330,13 @@ section {
 
 /* SERVICES SECTION */
 
-#experience {
+#services {
   position: relative;
   color: blue;
 
 }
 
-.experience-sub-title {
+.services-sub-title {
   color: black;
   font-weight: 600;
   font-size: 1.75rem;
@@ -344,7 +344,7 @@ section {
   color: blue;
 }
 
-.experience-details-container {
+.services-details-container {
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -375,7 +375,7 @@ article .icon {
 
 /* BOOKS SECTION */
 
-#projects {
+#books {
   position: relative;
   color: blue;
 }
