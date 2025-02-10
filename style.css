@@ -311,8 +311,8 @@ section {
   flex: 1;
   background-color: rgb(191, 202, 221);
   border-radius: 2rem;
-  border: rgb(53, 53, 53) 0.1rem solid;
-  border-color: rgb(163, 163, 163);
+  border: rgb(163, 163, 163) 0.1rem solid;
+  border-color: white;
   text-align: center;
   text-decoration-color: black;
 }
