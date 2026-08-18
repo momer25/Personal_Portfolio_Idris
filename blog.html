@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ዔርባይ</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.tiny.cloud/1/dzfxe5m9lcmresplhtfi85w1kcmxxqsihqt5i5vnla7oqis4/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+      // Initialize TinyMCE editor
+      tinymce.init({
+        selector: 'textarea', // Apply TinyMCE to the textarea
+        plugins: [
+          'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
+          'checklist', 'mediaembed', 'casechange', 'export', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'editimage', 'advtemplate', 'ai', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown', 'importword', 'exportword', 'exportpdf'
+        ],
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+        tinycomments_mode: 'embedded',
+        tinycomments_author: 'Author name',
+        mergetags_list: [
+          { value: 'First.Name', title: 'First Name' },
+          { value: 'Email', title: 'Email' },
+        ],
+        ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+      });
+    </script>
+  </head>
+  <body>
+    <nav id="desktop-nav">
+      <div class="logo">ዔርባይ</div>
+      <ul class="nav-links">
+        <li><a href="index.html#dictionary">ቃሙስ</a></li>
+        <li><a href="index.html#books">አክትበት</a></li>
+        <li><a href="index.html#about">እብ ክሱስዬ</a></li>
+        <li><a href="blog.html">ብሎግ</a></li>
+      </ul>
+    </nav>
+
+    <section id="blog">
+      <div class="blog-container">
+        <div class="blog-main">
+          <!-- Blog posts will be inserted here dynamically -->
+          <div id="blog-posts"></div> <!-- Container for blog posts -->
+        </div>
+        <aside class="blog-sidebar">
+          <h3>ሐብሬ</h3>
+          <h4>ሐዲስ ክታብ ዲብ መክተበትና...</h4>
+          <h3>ብሎጋት ገዲም</h3>
+          <ul id="recent-posts">
+            <!-- Dynamically generated list of recent blog posts will go here -->
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="admin-section" style="display:none;">
+      <!-- Admin section to publish new posts -->
+      <h2>Create New Post</h2>
+      <input type="text" id="post-title" placeholder="Title" />
+      <textarea id="post-content"></textarea>
+      <button id="publish-post">Publish</button>
+    </section>
+
+    <section id="admin-login" style="display:none;">
+      <h2>Admin Login</h2>
+      <button onclick="loginAdmin()">Login as Admin</button>
+    </section>
+
+    <script src="script.js"></script> <!-- Link JavaScript file -->
+  </body>
+</html>
