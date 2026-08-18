@@ -329,6 +329,11 @@ section {
   margin-top: 1.5rem;
 }
 
+.about-mission {
+  margin-top: 1rem;
+  color: blue;
+}
+
 .about-photo-col {
   display: flex;
   flex-direction: column;
