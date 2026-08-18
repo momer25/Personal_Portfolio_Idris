@@ -73,6 +73,18 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+// Rebuild mailto links from data attributes at runtime so the raw
+// address isn't sitting in the page source for scrapers to harvest.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".email-link").forEach(function (link) {
+    const user = link.getAttribute("data-user");
+    const domain = link.getAttribute("data-domain");
+    if (user && domain) {
+      link.setAttribute("href", "mailto:" + user + "@" + domain);
+    }
+  });
+});
+
 // Admin login function
 function loginAdmin() {
   const password = prompt("Enter admin password:");
