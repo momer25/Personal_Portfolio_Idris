@@ -6,9 +6,11 @@ function toggleMenu() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  const isAdmin = localStorage.getItem("isAdmin");
   const adminSection = document.getElementById("admin-section");
   const adminLogin = document.getElementById("admin-login");
+  if (!adminSection || !adminLogin) return;
+
+  const isAdmin = localStorage.getItem("isAdmin");
 
   // Show/hide sections based on admin login status
   if (isAdmin === "true") {
