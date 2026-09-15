@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://wedhamid.github.io/GharoDictionary/sitemap.xml
