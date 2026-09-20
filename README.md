@@ -18,8 +18,13 @@ The page fetches a file, so it needs to be served over http(s) — opening
 `index.html` by double-clicking it will not work.
 
 ```
-python3 -m http.server 8000     # then open http://localhost:8000
+python -m http.server 8000     # then open http://localhost:8000
 ```
+
+On Windows, `python3` is often a Microsoft Store alias that does nothing until
+Python is installed from the Store — use `python` instead if `python3` prints
+an install prompt. Alternatively, any static file server works, e.g.
+`npx serve .` or `npx http-server .`.
 
 ## Editing the dictionary
 
