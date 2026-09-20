@@ -35,12 +35,70 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
   document.getElementById('site-favicon').href = logo;
   const load = key => { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } };
   const save = (key,value) => localStorage.setItem(key, JSON.stringify(value));
-  const state = {query:'',tab:'Dictionary',selected:null,saved:load('gharo-saved'),recent:load('gharo-recent'),menu:false};
+  const state = {query:'',tab:'Dictionary',selected:null,saved:load('gharo-saved'),recent:load('gharo-recent'),menu:false,geez:localStorage.getItem('gharo-geez-kbd')==='1'};
   const esc = value => String(value ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   const normalize = value => String(value || '').toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
   const parseEnglish = value => { const match = String(value || '').match(/^(.*?)(?:\s+\(([^)]+)\))?$/); return {word:(match?.[1] || value || '').trim(),pos:(match?.[2] || '').trim()}; };
   const label = entry => parseEnglish(entry.w).word;
-  const placeholder = () => 'Search English, ትግረ (Tigre) or العربية…';
+  const GEEZ_TABLES = {"MAIN":{"8":[4816,4817,4818,4819,4820,4821,4822],"h":[4608,4609,4610,4611,4612,4613,4614],"l":[4616,4617,4618,4619,4620,4621,4622],"hh":[4624,4625,4626,4627,4628,4629,4630],"m":[4632,4633,4634,4635,4636,4637,4638],"sz":[4640,4641,4642,4643,4644,4645,4646],"r":[4648,4649,4650,4651,4652,4653,4654],"s":[4656,4657,4658,4659,4660,4661,4662],"sh":[4664,4665,4666,4667,4668,4669,4670],"q":[4672,4673,4674,4675,4676,4677,4678],"qh":[4688,4689,4690,4691,4692,4693,4694],"b":[4704,4705,4706,4707,4708,4709,4710],"v":[4712,4713,4714,4715,4716,4717,4718],"t":[4720,4721,4722,4723,4724,4725,4726],"c":[4728,4729,4730,4731,4732,4733,4734],"x":[4736,4737,4738,4739,4740,4741,4742],"n":[4752,4753,4754,4755,4756,4757,4758],"ny":[4760,4761,4762,4763,4764,4765,4766],"k":[4776,4777,4778,4779,4780,4781,4782],"kh":[4792,4793,4794,4795,4796,4797,4798],"w":[4808,4809,4810,4811,4812,4813,4814],"z":[4824,4825,4826,4827,4828,4829,4830],"zh":[4832,4833,4834,4835,4836,4837,4838],"y":[4840,4841,4842,4843,4844,4845,4846],"d":[4848,4849,4850,4851,4852,4853,4854],"dd":[4856,4857,4858,4859,4860,4861,4862],"j":[4864,4865,4866,4867,4868,4869,4870],"g":[4872,4873,4874,4875,4876,4877,4878],"gg":[4888,4889,4890,4891,4892,4893,4894],"th":[4896,4897,4898,4899,4900,4901,4902],"ch":[4904,4905,4906,4907,4908,4909,4910],"ph":[4912,4913,4914,4915,4916,4917,4918],"ts":[4920,4921,4922,4923,4924,4925,4926],"tz":[4928,4929,4930,4931,4932,4933,4934],"f":[4936,4937,4938,4939,4940,4941,4942],"p":[4944,4945,4946,4947,4948,4949,4950]},"GLOTTAL":[4768,4769,4770,4771,4772,4773,4774],"PHARYNGEAL":[4816,4817,4818,4819,4820,4821,4822],"LABIAL":{"l":{"A":4623},"hh":{"A":4631},"m":{"A":4639},"sz":{"A":4647},"r":{"A":4655},"s":{"A":4663},"sh":{"A":4671},"q":{"A":4680,"I":4682,"AA":4683,"EE":4684,"E":4685},"qh":{"A":4696,"I":4698,"AA":4699,"EE":4700,"E":4701},"b":{"A":4711},"v":{"A":4719},"t":{"A":4727},"c":{"A":4735},"x":{"A":4744,"I":4746,"AA":4747,"EE":4748,"E":4749},"n":{"A":4759},"ny":{"A":4767},"k":{"A":4784,"I":4786,"AA":4787,"EE":4788,"E":4789},"kh":{"A":4800,"I":4802,"AA":4803,"EE":4804,"E":4805},"z":{"A":4831},"zh":{"A":4839},"d":{"A":4855},"dd":{"A":4863},"j":{"A":4871},"g":{"A":4880,"I":4882,"AA":4883,"EE":4884,"E":4885},"gg":{"AA":4895},"th":{"A":4903},"ch":{"A":4911},"ph":{"A":4919},"ts":{"A":4927},"f":{"A":4943},"p":{"A":4951},"":{"A":4775}},"KEYMAP":{"H":"h","L":"l","HH":"hh","M":"m","SZ":"sz","R":"r","S":"s","SH":"sh","Q":"q","QH":"qh","B":"b","V":"v","T":"t","C":"c","X":"x","N":"n","NY":"ny","K":"k","KX":"kh","W":"w","Z":"z","ZH":"zh","Y":"y","D":"d","DD":"dd","J":"j","G":"g","GG":"gg","TH":"th","CH":"ch","PH":"ph","TS":"ts","TZ":"tz","F":"f","P":"p","GLOTTAL":"","PHARYNGEAL":"8"}};
+  const GEEZ_DIGRAPHS = {sh:'sh',ch:'ch',th:'th',ts:'ts',tz:'tz',hh:'hh',qh:'qh',ny:'ny',kh:'kh',zh:'zh',sz:'sz',dd:'dd',gg:'gg',ph:'ph'};
+  const GEEZ_REV = new Map();
+  for (const [gk, arr] of Object.entries(GEEZ_TABLES.MAIN)) arr.forEach((cp,i)=>{ if(cp!=null) GEEZ_REV.set(String.fromCodePoint(cp), {kind:'main',key:gk,order:i}); });
+  GEEZ_TABLES.GLOTTAL.forEach((cp,i)=>{ if(cp!=null) GEEZ_REV.set(String.fromCodePoint(cp), {kind:'glottal',key:'',order:i}); });
+  if (GEEZ_TABLES.PHARYNGEAL) GEEZ_TABLES.PHARYNGEAL.forEach((cp,i)=>{ if(cp!=null) GEEZ_REV.set(String.fromCodePoint(cp), {kind:'pharyngeal',key:'8',order:i}); });
+  for (const [gk, slots] of Object.entries(GEEZ_TABLES.LABIAL)) for (const [slot,cp] of Object.entries(slots)) { if(cp!=null) GEEZ_REV.set(String.fromCodePoint(cp), {kind:'labial',key:gk,slot}); }
+  function geezCharFor(kind,gkey,orderOrSlot) {
+    if (kind==='main') return GEEZ_TABLES.MAIN[gkey] && GEEZ_TABLES.MAIN[gkey][orderOrSlot]!=null ? String.fromCodePoint(GEEZ_TABLES.MAIN[gkey][orderOrSlot]) : null;
+    if (kind==='glottal') return GEEZ_TABLES.GLOTTAL[orderOrSlot]!=null ? String.fromCodePoint(GEEZ_TABLES.GLOTTAL[orderOrSlot]) : null;
+    if (kind==='pharyngeal') return GEEZ_TABLES.PHARYNGEAL && GEEZ_TABLES.PHARYNGEAL[orderOrSlot]!=null ? String.fromCodePoint(GEEZ_TABLES.PHARYNGEAL[orderOrSlot]) : null;
+    if (kind==='labial') return GEEZ_TABLES.LABIAL[gkey] && GEEZ_TABLES.LABIAL[gkey][orderOrSlot]!=null ? String.fromCodePoint(GEEZ_TABLES.LABIAL[gkey][orderOrSlot]) : null;
+    return null;
+  }
+  function computeGeezEdit(value,pos,typedChar) {
+    const before=value.slice(0,pos), after=value.slice(pos);
+    const lastChar=before.slice(-1);
+    const info=GEEZ_REV.get(lastChar);
+    const VOWELS='aeiou';
+    if (typedChar==='w' && info && (info.kind==='main'||info.kind==='glottal') && info.order===5 && GEEZ_TABLES.LABIAL[info.key] && GEEZ_TABLES.LABIAL[info.key].A!=null) {
+      return { newValue: before.slice(0,-1)+geezCharFor('labial',info.key,'A')+after, newPos: pos };
+    }
+    if (VOWELS.includes(typedChar) && info) {
+      if (info.kind==='labial') {
+        let slot=null;
+        if (typedChar==='i') slot='I'; else if (typedChar==='a') slot='AA'; else if (typedChar==='e') slot=(info.slot==='I')?'EE':'E';
+        if (slot && GEEZ_TABLES.LABIAL[info.key] && GEEZ_TABLES.LABIAL[info.key][slot]!=null) {
+          return { newValue: before.slice(0,-1)+geezCharFor('labial',info.key,slot)+after, newPos: pos };
+        }
+      } else {
+        let order;
+        if (typedChar==='u') order=1; else if (typedChar==='i') order=2; else if (typedChar==='a') order=3; else if (typedChar==='o') order=6; else order=(info.order===2)?4:0;
+        const ch=geezCharFor(info.kind,info.key,order);
+        if (ch) return { newValue: before.slice(0,-1)+ch+after, newPos: pos };
+      }
+    }
+    if (!VOWELS.includes(typedChar) && typedChar!=='w' && info && info.kind==='main' && info.order===5) {
+      const combined=GEEZ_DIGRAPHS[info.key+typedChar];
+      if (combined && GEEZ_TABLES.MAIN[combined]) {
+        return { newValue: before.slice(0,-1)+geezCharFor('main',combined,5)+after, newPos: pos };
+      }
+    }
+    if (typedChar==="'") {
+      return { newValue: before+geezCharFor('glottal','',5)+after, newPos: pos+1 };
+    }
+    if (!VOWELS.includes(typedChar) && GEEZ_TABLES.MAIN[typedChar]) {
+      return { newValue: before+geezCharFor('main',typedChar,5)+after, newPos: pos+1 };
+    }
+    if (VOWELS.includes(typedChar)) {
+      let order;
+      if (typedChar==='u') order=1; else if (typedChar==='i') order=2; else if (typedChar==='a') order=3; else if (typedChar==='o') order=6; else order=0;
+      return { newValue: before+geezCharFor('glottal','',order)+after, newPos: pos+1 };
+    }
+    if (typedChar==='8' && GEEZ_TABLES.PHARYNGEAL) {
+      return { newValue: before+geezCharFor('pharyngeal','8',5)+after, newPos: pos+1 };
+    }
+    return null;
+  }
+  const placeholder = () => state.geez ? "Type Latin letters for ግዕዝ (e.g. type selam)…" : 'Search English, ትግረ (Tigre) or العربية…';
   const matches = () => {
     const raw = state.query.trim();
     if (!raw) return [];
@@ -79,7 +137,7 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
         </nav></header>
         <section class="hero" aria-labelledby="hero-title"><div class="hero-glow"></div><div class="hero-inner"><span class="hero-tag">ENGLISH · TIGRE · ARABIC</span><h1 id="hero-title">Gharo Project</h1><p>Gharo English–Tigre–Arabic Dictionary</p><span class="hero-rule"><i></i>◆<i></i></span></div></section>
         <main>
-          <section class="search-panel" id="dictionary"><div class="search-row"><div class="search-box"><span class="search-icon" aria-hidden="true">⌕</span><input id="query" value="${esc(state.query)}" placeholder="${placeholder()}" aria-label="Search the dictionary"><span class="search-count">${entriesStatus==='loading' ? 'loading\u2026' : entriesStatus==='error' ? 'unavailable' : state.query ? found.length+' matches' : 'ready'}</span></div><button class="search-button" id="search">Search</button></div><div class="language-pills"><span>EN · English</span><span>TG · ትግረ</span><span>AR · العربية</span><span>▧ 25,792 offline entries</span></div></section>
+          <section class="search-panel" id="dictionary"><div class="search-row"><div class="search-box"><span class="search-icon" aria-hidden="true">⌕</span><input id="query" value="${esc(state.query)}" placeholder="${placeholder()}" aria-label="Search the dictionary"><span class="search-count">${entriesStatus==='loading' ? 'loading\u2026' : entriesStatus==='error' ? 'unavailable' : state.query ? found.length+' matches' : 'ready'}</span></div><button class="search-button" id="search">Search</button></div>${state.geez ? `<p style="margin:10px 2px 0;font-size:12px;color:var(--muted)">ግዕዝ keyboard on — type Latin letters (type 'selam'); type a vowel again right after a letter to change it (k, e, i → ኪ); type &#39; before a word-starting vowel.</p>` : ''}<div class="language-pills"><span>EN · English</span><span>TG · ትግረ</span><span>AR · العربية</span><span>▧ 25,792 offline entries</span><button type="button" id="geez-toggle" aria-pressed="${state.geez?'true':'false'}" style="color:${state.geez?'#fff':'#31516f'};background:${state.geez?'var(--blue)':'#eef4fa'};border-radius:999px;display:inline-flex;align-items:center;gap:5px;padding:8px 12px;font-size:12px;font-weight:650;border:0;cursor:pointer">⌨ ${state.geez?'ግዕዝ ON':'Type ግዕዝ'}</button></div></section>
           ${state.tab==='Dictionary' && active ? detail(active, selectedSaved) : ''}
           <div class="content"><div class="content-grid"><section class="main-column">
             ${state.tab==='Dictionary' ? `<div class="results-widget"><div class="section-heading"><div><span class="panel-label">${active ? 'RELATED WORDS' : 'CLOSEST MATCHES'}</span><h2>${active ? 'Related to “'+esc(label(active))+'”' : (state.query ? 'Results for “'+esc(state.query)+'”' : 'Search the Gharo Dictionary')}</h2></div></div>${entriesStatus==='loading' ? `<div class="empty-card"><div class="empty-glyph">⋯</div><div><strong>Loading the dictionary…</strong><p>Entries appear as soon as the word list finishes downloading.</p></div></div>` : entriesStatus==='error' ? `<div class="empty-card"><div class="empty-glyph">!</div><div><strong>The dictionary could not be loaded.</strong><p>Check your connection and reload the page.</p></div></div>` : state.query ? (relatedList.length ? `<div class="match-list">${relatedList.map(e=>matchCard(e, active===e)).join('')}</div>` : `<div class="empty-card"><div class="empty-glyph">Aa</div><div><strong>${active ? 'No other related words yet.' : 'No matching entry found.'}</strong><p>${active ? 'This looks like the only entry for this term.' : 'Try a different spelling.'}</p></div></div>`) : `<div class="empty-card"><div class="empty-glyph">Aa</div><div><strong>Your next word starts here.</strong><p>Search English, Tigre (ትግረ), or Arabic (العربية) — matches appear across all three at once.</p></div></div>`}</div>${quickIndex()}<div class="ad-slot"><span>ADVERTISEMENT</span><small>Reserved for a clearly labeled sponsor placement</small></div>${books()}` : state.tab==='Saved' ? archive('Saved words', state.saved) : state.tab==='Recent' ? archive('Recent searches', state.recent) : about()}
@@ -113,7 +171,23 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
   function about() { return `<div class="about-view"><div class="section-heading"><div><span class="panel-label">ABOUT GHARO</span><h2>A reference built for everyday language.</h2></div></div><article class="about-card"><h3>Three languages, one careful archive.</h3><p>Gharo Project brings English, Tigre, and Arabic together in a focused lookup tool designed for learners, families, and communities keeping language close.</p><div class="about-grid"><div><span>Dictionary</span><strong>25,792 offline entries</strong></div><div><span>Lookup</span><strong>Unified EN · ትግረ · AR search</strong></div></div><p class="about-author">Content by Mohamedidris Hamed Omer.</p></article></div>`; }
   function bind() {
     document.getElementById('query').oninput=e=>{state.query=e.target.value;render();};
-    document.getElementById('query').onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();document.getElementById('search').click();}};
+    document.getElementById('geez-toggle')?.addEventListener('click',()=>{state.geez=!state.geez;localStorage.setItem('gharo-geez-kbd', state.geez?'1':'0');render();});
+    document.getElementById('query').onkeydown=ev=>{
+      if(ev.key==='Enter'){ev.preventDefault();document.getElementById('search').click();return;}
+      if(state.geez && /^[a-z']$/.test(ev.key) && !ev.ctrlKey && !ev.metaKey && !ev.altKey){
+        const input=ev.target;
+        if(input.selectionStart===input.selectionEnd){
+          const result=computeGeezEdit(input.value, input.selectionStart, ev.key);
+          if(result){
+            ev.preventDefault();
+            input.value=result.newValue;
+            input.setSelectionRange(result.newPos, result.newPos);
+            state.query=result.newValue;
+            render();
+          }
+        }
+      }
+    };
     document.getElementById('search').onclick=()=>{const top=matches()[0];if(top){state.selected=top;const key=label(top);state.recent=[key,...state.recent.filter(x=>x!==key)].slice(0,20);save('gharo-recent',state.recent);}render();const q=document.getElementById('query');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length);}};
     document.getElementById('menu').onclick=()=>{state.menu=!state.menu;render();};
     document.querySelectorAll('[data-tab]').forEach(el=>el.onclick=ev=>{const tab=ev.currentTarget.dataset.tab;if(tab){state.tab=tab;state.selected=null;state.menu=false;render();}});
