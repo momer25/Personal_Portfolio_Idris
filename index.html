@@ -36,7 +36,7 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
   const load = key => { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } };
   const save = (key,value) => localStorage.setItem(key, JSON.stringify(value));
   const PAGE = 5;
-  const state = {query:'',tab:'Dictionary',selected:null,saved:load('gharo-saved'),recent:load('gharo-recent'),menu:false,geez:localStorage.getItem('gharo-geez-kbd')==='1',shown:PAGE};
+  const state = {query:'',tab:'Dictionary',selected:null,saved:load('gharo-saved'),recent:load('gharo-recent'),menu:false,shown:PAGE};
   const esc = value => String(value ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   const normalize = value => String(value || '').toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
   const parseEnglish = value => { const match = String(value || '').match(/^(.*?)(?:\s+\(([^)]+)\))?$/); return {word:(match?.[1] || value || '').trim(),pos:(match?.[2] || '').trim()}; };
@@ -100,10 +100,11 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
     return null;
   }
   // Runs the same letter-by-letter rules as computeGeezEdit over a whole
-  // string in one pass, always typing at the end. Used both to keep the
-  // live search box in sync (see applyGeezInput) and to transliterate a
-  // plain Latin search query for matching against ትግረ/pronunciation text,
-  // so search works whether or not the ግዕዝ keyboard toggle is on.
+  // string in one pass, always typing at the end. Used to transliterate a
+  // plain Latin search query for matching against ትግረ/pronunciation text —
+  // the search box itself always shows exactly what was typed (like
+  // index(3).html), so this only affects which results are found, never
+  // what's displayed.
   function latinWordToGeez(latin) {
     let value = '';
     for (const raw of String(latin)) {
@@ -117,41 +118,15 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
     }
     return value;
   }
-  // Converts the ግዕዝ keyboard's raw DOM value into the transliterated
-  // string. Diffs against the last known-good state.query instead of
-  // trusting the input's live selectionStart/caret (which desyncs after
-  // the app's full re-render on every keystroke, especially with mobile
-  // keyboards/autocomplete) — new text is assumed typed at the end, which
-  // covers normal typing, autocomplete inserts, and backspace.
-  function applyGeezInput(newValue) {
-    const oldValue = state.query;
-    if (newValue.length > oldValue.length && newValue.startsWith(oldValue)) {
-      let value = oldValue;
-      for (const raw of newValue.slice(oldValue.length)) {
-        const ch = raw.toLowerCase();
-        if (/^[a-z']$/.test(ch)) {
-          const result = computeGeezEdit(value, value.length, ch);
-          value = result ? result.newValue : value + raw;
-        } else {
-          value += raw;
-        }
-      }
-      return value;
-    }
-    if (newValue.length < oldValue.length && oldValue.startsWith(newValue)) {
-      return newValue;
-    }
-    return newValue;
-  }
-  const placeholder = () => state.geez ? "Type Latin letters for ግዕዝ (e.g. type selam)…" : 'Search English, ትግረ (Tigre) or العربية… (Latin letters work too)';
+  const placeholder = () => 'Search English, ትግረ (Tigre) or العربية… (Latin letters work too)';
   const matches = () => {
     const raw = state.query.trim();
     if (!raw) return [];
     const ql = normalize(raw);
-    // Typing a Latin word (e.g. "selam") should also find it spelled in
-    // ትግረ ("ሰላም"), whether or not the ግዕዝ keyboard toggle is on — so
-    // transliterate the raw query once and match it against the Ge'ez
-    // script fields too.
+    // Typing a Latin word (e.g. "kelb") should also find it spelled in
+    // ትግረ ("ከልብ") — transliterate the raw query once and match it
+    // against the Ge'ez script fields too, without ever touching what's
+    // shown in the search box itself.
     const geezQl = /[a-z]/i.test(raw) ? latinWordToGeez(raw.toLowerCase()) : '';
     const starts = [];
     const contains = [];
@@ -188,7 +163,7 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
         </nav></header>
         <section class="hero" aria-labelledby="hero-title"><div class="hero-glow"></div><div class="hero-inner"><span class="hero-tag">ENGLISH · TIGRE · ARABIC</span><h1 id="hero-title">Gharo Project</h1><p>Gharo English–Tigre–Arabic Dictionary</p><span class="hero-rule"><i></i>◆<i></i></span></div></section>
         <main>
-          <section class="search-panel" id="dictionary"><div class="search-row"><div class="search-box"><span class="search-icon" aria-hidden="true">⌕</span><input id="query" value="${esc(state.query)}" placeholder="${placeholder()}" aria-label="Search the dictionary"><span class="search-count">${entriesStatus==='loading' ? 'loading\u2026' : entriesStatus==='error' ? 'unavailable' : state.query ? found.length+' matches' : 'ready'}</span></div><button class="search-button" id="search">Search</button></div>${state.geez ? `<p style="margin:10px 2px 0;font-size:12px;color:var(--muted)">ግዕዝ keyboard on — type Latin letters (type 'selam'); type a vowel again right after a letter to change it (k, e, i → ኪ); type &#39; before a word-starting vowel.</p>` : ''}<div class="language-pills"><span>EN · English</span><span>TG · ትግረ</span><span>AR · العربية</span><span>▧ 25,792 offline entries</span><button type="button" id="geez-toggle" aria-pressed="${state.geez?'true':'false'}" style="color:${state.geez?'#fff':'#31516f'};background:${state.geez?'var(--blue)':'#eef4fa'};border-radius:999px;display:inline-flex;align-items:center;gap:5px;padding:8px 12px;font-size:12px;font-weight:650;border:0;cursor:pointer">⌨ ${state.geez?'ግዕዝ ON':'Type ግዕዝ'}</button></div></section>
+          <section class="search-panel" id="dictionary"><div class="search-row"><div class="search-box"><span class="search-icon" aria-hidden="true">⌕</span><input id="query" value="${esc(state.query)}" placeholder="${placeholder()}" aria-label="Search the dictionary"><span class="search-count">${entriesStatus==='loading' ? 'loading\u2026' : entriesStatus==='error' ? 'unavailable' : state.query ? found.length+' matches' : 'ready'}</span></div><button class="search-button" id="search">Search</button></div><div class="language-pills"><span>EN · English</span><span>TG · ትግረ</span><span>AR · العربية</span><span>▧ 25,792 offline entries</span></div></section>
           ${state.tab==='Dictionary' && active ? detail(active, selectedSaved) : ''}
           <div class="content"><div class="content-grid"><section class="main-column">
             ${state.tab==='Dictionary' ? `<div class="results-widget"><div class="section-heading"><div><span class="panel-label">${active ? 'RELATED WORDS' : 'CLOSEST MATCHES'}</span><h2>${active ? 'Related to “'+esc(label(active))+'”' : (state.query ? 'Results for “'+esc(state.query)+'”' : 'Search the Gharo Dictionary')}</h2></div></div>${entriesStatus==='loading' ? `<div class="empty-card"><div class="empty-glyph">⋯</div><div><strong>Loading the dictionary…</strong><p>Entries appear as soon as the word list finishes downloading.</p></div></div>` : entriesStatus==='error' ? `<div class="empty-card"><div class="empty-glyph">!</div><div><strong>The dictionary could not be loaded.</strong><p>Check your connection and reload the page.</p></div></div>` : state.query ? (relatedList.length ? `<div class="match-list">${visibleList.map(e=>matchCard(e, active===e)).join('')}</div>${relatedList.length>visibleList.length ? `<button class="text-button" id="load-more" style="margin-top:14px">Show more results (${relatedList.length-visibleList.length} left) ↓</button>` : ''}` : `<div class="empty-card"><div class="empty-glyph">Aa</div><div><strong>${active ? 'No other related words yet.' : 'No matching entry found.'}</strong><p>${active ? 'This looks like the only entry for this term.' : 'Try a different spelling.'}</p></div></div>`) : `<div class="empty-card"><div class="empty-glyph">Aa</div><div><strong>Your next word starts here.</strong><p>Search English, Tigre (ትግረ), or Arabic (العربية) — matches appear across all three at once.</p></div></div>`}</div>${quickIndex()}<div class="ad-slot"><span>ADVERTISEMENT</span><small>Reserved for a clearly labeled sponsor placement</small></div>${books()}` : state.tab==='Saved' ? archive('Saved words', state.saved) : state.tab==='Recent' ? archive('Recent searches', state.recent) : about()}
@@ -222,12 +197,11 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
   function about() { return `<div class="about-view"><div class="section-heading"><div><span class="panel-label">ABOUT GHARO</span><h2>A reference built for everyday language.</h2></div></div><article class="about-card"><h3>Three languages, one careful archive.</h3><p>Gharo Project brings English, Tigre, and Arabic together in a focused lookup tool designed for learners, families, and communities keeping language close.</p><div class="about-grid"><div><span>Dictionary</span><strong>25,792 offline entries</strong></div><div><span>Lookup</span><strong>Unified EN · ትግረ · AR search</strong></div></div><p class="about-author">Content by Mohamedidris Hamed Omer.</p></article></div>`; }
   function bind() {
     document.getElementById('query').oninput=e=>{
-      state.query=state.geez ? applyGeezInput(e.target.value) : e.target.value;
+      state.query=e.target.value;
       state.shown=PAGE;
       render();
     };
     document.getElementById('load-more')?.addEventListener('click',()=>{state.shown+=PAGE;render();});
-    document.getElementById('geez-toggle')?.addEventListener('click',()=>{state.geez=!state.geez;localStorage.setItem('gharo-geez-kbd', state.geez?'1':'0');render();});
     document.getElementById('query').onkeydown=ev=>{
       if(ev.key==='Enter'){ev.preventDefault();document.getElementById('search').click();}
     };
