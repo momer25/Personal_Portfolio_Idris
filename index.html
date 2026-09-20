@@ -175,10 +175,10 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
         </nav></header>
         <section class="hero" aria-labelledby="hero-title"><div class="hero-glow"></div><div class="hero-inner"><span class="hero-tag">ENGLISH · TIGRE · ARABIC</span><h1 id="hero-title">Gharo Project</h1><p>Gharo English–Tigre–Arabic Dictionary</p><span class="hero-rule"><i></i>◆<i></i></span></div></section>
         <main>
-          <section class="search-panel" id="dictionary"><div class="search-row"><div class="search-box"><span class="search-icon" aria-hidden="true">⌕</span><input id="query" value="${esc(state.query)}" placeholder="${placeholder()}" aria-label="Search the dictionary"><span class="search-count">${entriesStatus==='loading' ? 'loading\u2026' : entriesStatus==='error' ? 'unavailable' : state.query ? found.length+' matches' : 'ready'}</span></div><button class="search-button" id="search">Search</button></div>${geezPreview ? `<p style="margin:10px 2px 0;font-size:13px;color:var(--muted)">Also searching ትግረ: <strong lang="ti" style="font-family:'Noto Sans Ethiopic',serif;color:var(--text)">${esc(geezPreview)}</strong></p>` : ''}<div class="language-pills"><span>EN · English</span><span>TG · ትግረ</span><span>AR · العربية</span><span>▧ 25,792 offline entries</span></div></section>
+          <section class="search-panel" id="dictionary"><div class="search-row"><div class="search-box"><span class="search-icon" aria-hidden="true">⌕</span><input id="query" value="${esc(state.query)}" placeholder="${placeholder()}" aria-label="Search the dictionary"><span class="search-count" id="search-count">${entriesStatus==='loading' ? 'loading\u2026' : entriesStatus==='error' ? 'unavailable' : state.query ? found.length+' matches' : 'ready'}</span></div><button class="search-button" id="search">Search</button></div><p id="geez-preview" style="margin:10px 2px 0;font-size:13px;color:var(--muted)"${geezPreview?'':' hidden'}>Also searching ትግረ: <strong lang="ti" style="font-family:'Noto Sans Ethiopic',serif;color:var(--text)">${esc(geezPreview)}</strong></p><div class="language-pills"><span>EN · English</span><span>TG · ትግረ</span><span>AR · العربية</span><span>▧ 25,792 offline entries</span></div></section>
           ${state.tab==='Dictionary' && active ? detail(active, selectedSaved) : ''}
-          <div class="content"><div class="content-grid"><section class="main-column">
-            ${state.tab==='Dictionary' ? `<div class="results-widget"><div class="section-heading"><div><span class="panel-label">${active ? 'RELATED WORDS' : 'CLOSEST MATCHES'}</span><h2>${active ? 'Related to “'+esc(label(active))+'”' : (state.query ? 'Results for “'+esc(state.query)+'”' : 'Search the Gharo Dictionary')}</h2></div></div>${entriesStatus==='loading' ? `<div class="empty-card"><div class="empty-glyph">⋯</div><div><strong>Loading the dictionary…</strong><p>Entries appear as soon as the word list finishes downloading.</p></div></div>` : entriesStatus==='error' ? `<div class="empty-card"><div class="empty-glyph">!</div><div><strong>The dictionary could not be loaded.</strong><p>Check your connection and reload the page.</p></div></div>` : state.query ? (relatedList.length ? `<div class="match-list">${visibleList.map(e=>matchCard(e, active===e)).join('')}</div>${relatedList.length>visibleList.length ? `<button class="text-button" id="load-more" style="margin-top:14px">Show more results (${relatedList.length-visibleList.length} left) ↓</button>` : ''}` : `<div class="empty-card"><div class="empty-glyph">Aa</div><div><strong>${active ? 'No other related words yet.' : 'No matching entry found.'}</strong><p>${active ? 'This looks like the only entry for this term.' : 'Try a different spelling.'}</p></div></div>`) : `<div class="empty-card"><div class="empty-glyph">Aa</div><div><strong>Your next word starts here.</strong><p>Search English, Tigre (ትግረ), or Arabic (العربية) — matches appear across all three at once.</p></div></div>`}</div>${quickIndex()}<div class="ad-slot"><span>ADVERTISEMENT</span><small>Reserved for a clearly labeled sponsor placement</small></div>${books()}` : state.tab==='Saved' ? archive('Saved words', state.saved) : state.tab==='Recent' ? archive('Recent searches', state.recent) : about()}
+          <div class="content"><div class="content-grid"><section class="main-column" id="tab-content">
+            ${state.tab==='Dictionary' ? dictionaryResults(active, relatedList, visibleList) : state.tab==='Saved' ? archive('Saved words', state.saved) : state.tab==='Recent' ? archive('Recent searches', state.recent) : about()}
           </section><aside class="sidebar"><div class="side-card"><span class="panel-label">THE ARCHIVE</span><h2>Words, kept close.</h2><p>A focused multilingual reference for quick lookup, careful reading, and everyday language learning across Eritrea and eastern Sudan.</p><div class="side-rule"></div><div class="side-stat"><strong>25,792</strong><span>offline entries</span></div><div class="side-stat"><strong>3</strong><span>languages, one archive</span></div></div><div class="ad-slot side-ad"><span>ADVERTISEMENT</span><small>Clearly labeled sponsor placement</small></div><div class="side-card premium-side"><span class="panel-label">GHARO PLUS · COMING SOON</span><h2>Build a study shelf.</h2><p>A future premium plan can add curated study lists, sync, and advanced lookup tools without interrupting the free dictionary.</p><button id="notify">Notify me</button></div></aside></div></div>
         </main>
         <footer class="site-footer" id="about"><div class="footer-grid"><div><span class="footer-mark">GHARO</span><h3>Language, kept in reach.</h3><p>A practical English–Tigre–Arabic dictionary project by Mohamedidris Hamed Omer.</p></div><div><h4>Explore</h4><a href="#dictionary" data-tab="Dictionary">Dictionary</a><a href="#books">Books</a><a href="#about">About</a></div><div><h4>Languages</h4><span>English</span><span>Tigre</span><span>Arabic</span></div><div><h4>Contact</h4><a href="mailto:tigreadvances@gmail.com" class="footer-email" aria-label="Email"><span aria-hidden="true">✉</span></a></div></div><div class="footer-bottom">© ${new Date().getFullYear()} Mohamedidris Hamed Omer. GHARO Dictionary. All rights reserved.</div></footer>
@@ -190,6 +190,9 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
     }
   }
   function matchCard(e,selected) { const pos=parseEnglish(e.w).pos||e.o||''; return `<button class="match-card ${selected?'match-primary':''}" data-entry="${esc(label(e))}"><span class="match-text"><strong>${esc(label(e))}</strong><small>${pos?esc(pos)+' · ':''}${esc(e.t||'Tigre unavailable')}</small><small dir="rtl" lang="ar">${esc(e.a||'Arabic unavailable')}</small></span><span>›</span></button>`; }
+  function dictionaryResults(active, relatedList, visibleList) {
+    return `<div class="results-widget"><div class="section-heading"><div><span class="panel-label">${active ? 'RELATED WORDS' : 'CLOSEST MATCHES'}</span><h2>${active ? 'Related to “'+esc(label(active))+'”' : (state.query ? 'Results for “'+esc(state.query)+'”' : 'Search the Gharo Dictionary')}</h2></div></div>${entriesStatus==='loading' ? `<div class="empty-card"><div class="empty-glyph">⋯</div><div><strong>Loading the dictionary…</strong><p>Entries appear as soon as the word list finishes downloading.</p></div></div>` : entriesStatus==='error' ? `<div class="empty-card"><div class="empty-glyph">!</div><div><strong>The dictionary could not be loaded.</strong><p>Check your connection and reload the page.</p></div></div>` : state.query ? (relatedList.length ? `<div class="match-list">${visibleList.map(e=>matchCard(e, active===e)).join('')}</div>${relatedList.length>visibleList.length ? `<button class="text-button" id="load-more" style="margin-top:14px">Show more results (${relatedList.length-visibleList.length} left) ↓</button>` : ''}` : `<div class="empty-card"><div class="empty-glyph">Aa</div><div><strong>${active ? 'No other related words yet.' : 'No matching entry found.'}</strong><p>${active ? 'This looks like the only entry for this term.' : 'Try a different spelling.'}</p></div></div>`) : `<div class="empty-card"><div class="empty-glyph">Aa</div><div><strong>Your next word starts here.</strong><p>Search English, Tigre (ትግረ), or Arabic (العربية) — matches appear across all three at once.</p></div></div>`}</div>${quickIndex()}<div class="ad-slot"><span>ADVERTISEMENT</span><small>Reserved for a clearly labeled sponsor placement</small></div>${books()}`;
+  }
   function detail(e,saved) {
     const shareText=encodeURIComponent(label(e)+' — Tigre: '+(e.t||'—')+' | Arabic: '+(e.a||'—'));
     const shareUrl=encodeURIComponent(location.href);
@@ -211,11 +214,44 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
   }
   function archive(title,values) { const items=values.map(v=>entries.find(e=>label(e)===v)).filter(Boolean); const stillLoading=entriesStatus==='loading' && values.length && !items.length; return `<div class="archive-view"><div class="section-heading"><div><span class="panel-label">YOUR ARCHIVE</span><h2>${title}</h2></div></div>${items.length?`<div class="archive-list">${items.map(e=>`<button data-entry="${esc(label(e))}"><span>${esc(label(e))}</span><span>›</span></button>`).join('')}</div>`:stillLoading?`<div class="empty-card"><div class="empty-glyph">⋯</div><div><strong>Loading your words…</strong><p>The dictionary is still downloading.</p></div></div>`:`<div class="empty-card"><div class="empty-glyph">▱</div><div><strong>No saved words yet.</strong><p>Use Save word from any entry to keep it here.</p></div></div>`}</div>`; }
   function about() { return `<div class="about-view"><div class="section-heading"><div><span class="panel-label">ABOUT GHARO</span><h2>A reference built for everyday language.</h2></div></div><article class="about-card"><h3>Three languages, one careful archive.</h3><p>Gharo Project brings English, Tigre, and Arabic together in a focused lookup tool designed for learners, families, and communities keeping language close.</p><div class="about-grid"><div><span>Dictionary</span><strong>25,792 offline entries</strong></div><div><span>Lookup</span><strong>Unified EN · ትግረ · AR search</strong></div></div><p class="about-author">Content by Mohamedidris Hamed Omer.</p></article></div>`; }
+  // Re-rendering the whole app (render()) replaces every DOM node, including
+  // the search <input> itself — fine for clicks, but it destroys the
+  // browser's native IME composition state (e.g. a system Amharic/Ge'ez
+  // keyboard) on every keystroke, corrupting whatever was mid-composition.
+  // updateLive() runs on every keystroke instead: it never touches the
+  // input element, only the result list, match count, and Ge'ez preview
+  // around it, so the input node — and any IME composing in it — is left
+  // completely alone.
+  function updateLive() {
+    const found=matches();
+    const queryTrimmed=state.query.trim();
+    const geezPreview=/[a-z]/i.test(queryTrimmed) ? latinWordToGeez(queryTrimmed.toLowerCase()) : '';
+    const active=state.selected;
+    const relatedList=active ? found.filter(x=>normalize(label(x))!==normalize(label(active))) : found;
+    const visibleList=relatedList.slice(0, state.shown);
+    const countEl=document.getElementById('search-count');
+    if(countEl) countEl.textContent = entriesStatus==='loading' ? 'loading…' : entriesStatus==='error' ? 'unavailable' : state.query ? found.length+' matches' : 'ready';
+    const previewEl=document.getElementById('geez-preview');
+    if(previewEl){
+      previewEl.hidden=!geezPreview;
+      if(geezPreview) previewEl.innerHTML=`Also searching ትግረ: <strong lang="ti" style="font-family:'Noto Sans Ethiopic',serif;color:var(--text)">${esc(geezPreview)}</strong>`;
+    }
+    if(state.tab==='Dictionary'){
+      const tab=document.getElementById('tab-content');
+      if(tab){ tab.innerHTML=dictionaryResults(active, relatedList, visibleList); bindTabContent(); }
+    }
+  }
+  function bindTabContent() {
+    const root=document.getElementById('tab-content');
+    if(!root) return;
+    root.querySelectorAll('[data-entry]').forEach(el=>el.onclick=ev=>{const val=ev.currentTarget.dataset.entry;const e=entries.find(x=>label(x)===val);if(e){state.selected=e;state.shown=PAGE;const key=label(e);state.recent=[key,...state.recent.filter(x=>x!==key)].slice(0,20);save('gharo-recent',state.recent);trackPopular(key);render();}});
+    root.querySelector('#load-more')?.addEventListener('click',()=>{state.shown+=PAGE;updateLive();});
+  }
   function bind() {
     document.getElementById('query').oninput=e=>{
       state.query=e.target.value;
       state.shown=PAGE;
-      render();
+      updateLive();
     };
     document.getElementById('load-more')?.addEventListener('click',()=>{state.shown+=PAGE;render();});
     document.getElementById('query').onkeydown=ev=>{
