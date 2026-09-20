@@ -99,19 +99,68 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
     }
     return null;
   }
-  const placeholder = () => state.geez ? "Type Latin letters for ግዕዝ (e.g. type selam)…" : 'Search English, ትግረ (Tigre) or العربية…';
+  // Runs the same letter-by-letter rules as computeGeezEdit over a whole
+  // string in one pass, always typing at the end. Used both to keep the
+  // live search box in sync (see applyGeezInput) and to transliterate a
+  // plain Latin search query for matching against ትግረ/pronunciation text,
+  // so search works whether or not the ግዕዝ keyboard toggle is on.
+  function latinWordToGeez(latin) {
+    let value = '';
+    for (const raw of String(latin)) {
+      const ch = raw.toLowerCase();
+      if (/^[a-z']$/.test(ch)) {
+        const result = computeGeezEdit(value, value.length, ch);
+        value = result ? result.newValue : value + raw;
+      } else {
+        value += raw;
+      }
+    }
+    return value;
+  }
+  // Converts the ግዕዝ keyboard's raw DOM value into the transliterated
+  // string. Diffs against the last known-good state.query instead of
+  // trusting the input's live selectionStart/caret (which desyncs after
+  // the app's full re-render on every keystroke, especially with mobile
+  // keyboards/autocomplete) — new text is assumed typed at the end, which
+  // covers normal typing, autocomplete inserts, and backspace.
+  function applyGeezInput(newValue) {
+    const oldValue = state.query;
+    if (newValue.length > oldValue.length && newValue.startsWith(oldValue)) {
+      let value = oldValue;
+      for (const raw of newValue.slice(oldValue.length)) {
+        const ch = raw.toLowerCase();
+        if (/^[a-z']$/.test(ch)) {
+          const result = computeGeezEdit(value, value.length, ch);
+          value = result ? result.newValue : value + raw;
+        } else {
+          value += raw;
+        }
+      }
+      return value;
+    }
+    if (newValue.length < oldValue.length && oldValue.startsWith(newValue)) {
+      return newValue;
+    }
+    return newValue;
+  }
+  const placeholder = () => state.geez ? "Type Latin letters for ግዕዝ (e.g. type selam)…" : 'Search English, ትግረ (Tigre) or العربية… (Latin letters work too)';
   const matches = () => {
     const raw = state.query.trim();
     if (!raw) return [];
     const ql = normalize(raw);
+    // Typing a Latin word (e.g. "selam") should also find it spelled in
+    // ትግረ ("ሰላም"), whether or not the ግዕዝ keyboard toggle is on — so
+    // transliterate the raw query once and match it against the Ge'ez
+    // script fields too.
+    const geezQl = /[a-z]/i.test(raw) ? latinWordToGeez(raw.toLowerCase()) : '';
     const starts = [];
     const contains = [];
     for (const entry of entries) {
       const w = normalize(label(entry));
       const wordStarts = w.startsWith(ql);
       const wordContains = !wordStarts && w.includes(ql);
-      const tigreHit = (entry.t || '').includes(raw);
-      const pronHit = (entry.p || '').includes(raw);
+      const tigreHit = (entry.t || '').includes(raw) || (geezQl && entry.t && entry.t.includes(geezQl));
+      const pronHit = (entry.p || '').includes(raw) || (geezQl && entry.p && entry.p.includes(geezQl));
       const arabicHit = (entry.a && entry.a.includes(raw)) || (entry.a2 && entry.a2.includes(raw));
       if (wordStarts) starts.push(entry);
       else if (wordContains || tigreHit || pronHit || arabicHit) contains.push(entry);
@@ -172,25 +221,15 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
   function archive(title,values) { const items=values.map(v=>entries.find(e=>label(e)===v)).filter(Boolean); const stillLoading=entriesStatus==='loading' && values.length && !items.length; return `<div class="archive-view"><div class="section-heading"><div><span class="panel-label">YOUR ARCHIVE</span><h2>${title}</h2></div></div>${items.length?`<div class="archive-list">${items.map(e=>`<button data-entry="${esc(label(e))}"><span>${esc(label(e))}</span><span>›</span></button>`).join('')}</div>`:stillLoading?`<div class="empty-card"><div class="empty-glyph">⋯</div><div><strong>Loading your words…</strong><p>The dictionary is still downloading.</p></div></div>`:`<div class="empty-card"><div class="empty-glyph">▱</div><div><strong>No saved words yet.</strong><p>Use Save word from any entry to keep it here.</p></div></div>`}</div>`; }
   function about() { return `<div class="about-view"><div class="section-heading"><div><span class="panel-label">ABOUT GHARO</span><h2>A reference built for everyday language.</h2></div></div><article class="about-card"><h3>Three languages, one careful archive.</h3><p>Gharo Project brings English, Tigre, and Arabic together in a focused lookup tool designed for learners, families, and communities keeping language close.</p><div class="about-grid"><div><span>Dictionary</span><strong>25,792 offline entries</strong></div><div><span>Lookup</span><strong>Unified EN · ትግረ · AR search</strong></div></div><p class="about-author">Content by Mohamedidris Hamed Omer.</p></article></div>`; }
   function bind() {
-    document.getElementById('query').oninput=e=>{state.query=e.target.value;state.shown=PAGE;render();};
+    document.getElementById('query').oninput=e=>{
+      state.query=state.geez ? applyGeezInput(e.target.value) : e.target.value;
+      state.shown=PAGE;
+      render();
+    };
     document.getElementById('load-more')?.addEventListener('click',()=>{state.shown+=PAGE;render();});
     document.getElementById('geez-toggle')?.addEventListener('click',()=>{state.geez=!state.geez;localStorage.setItem('gharo-geez-kbd', state.geez?'1':'0');render();});
     document.getElementById('query').onkeydown=ev=>{
-      if(ev.key==='Enter'){ev.preventDefault();document.getElementById('search').click();return;}
-      if(state.geez && /^[a-z']$/.test(ev.key) && !ev.ctrlKey && !ev.metaKey && !ev.altKey){
-        const input=ev.target;
-        if(input.selectionStart===input.selectionEnd){
-          const result=computeGeezEdit(input.value, input.selectionStart, ev.key);
-          if(result){
-            ev.preventDefault();
-            input.value=result.newValue;
-            input.setSelectionRange(result.newPos, result.newPos);
-            state.query=result.newValue;
-            state.shown=PAGE;
-            render();
-          }
-        }
-      }
+      if(ev.key==='Enter'){ev.preventDefault();document.getElementById('search').click();}
     };
     document.getElementById('search').onclick=()=>{const top=matches()[0];if(top){state.selected=top;const key=label(top);state.recent=[key,...state.recent.filter(x=>x!==key)].slice(0,20);save('gharo-recent',state.recent);}render();const q=document.getElementById('query');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length);}};
     document.getElementById('menu').onclick=()=>{state.menu=!state.menu;render();};
