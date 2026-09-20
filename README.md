@@ -26,6 +26,14 @@ Python is installed from the Store — use `python` instead if `python3` prints
 an install prompt. Alternatively, any static file server works, e.g.
 `npx serve .` or `npx http-server .`.
 
+**In VS Code:** the "Launch Chrome against localhost" debug config (F5) only
+opens a browser tab at `http://localhost:8080` — it does not start a server by
+itself. It has a `preLaunchTask` wired up (`.vscode/tasks.json`) that runs
+`python -m http.server 8080` automatically first, so pressing F5 should just
+work. If Chrome still shows "refused to connect", check the integrated
+terminal for a task that failed to start (usually because `python` isn't on
+PATH) and run the command from it manually.
+
 ## Editing the dictionary
 
 Add or edit entries in `data/dictionary.json`. Each entry looks like:
