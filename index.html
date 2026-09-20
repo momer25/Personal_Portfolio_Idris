@@ -35,7 +35,7 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
   document.getElementById('site-favicon').href = logo;
   const load = key => { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } };
   const save = (key,value) => localStorage.setItem(key, JSON.stringify(value));
-  const PAGE = 60;
+  const PAGE = 5;
   const state = {query:'',tab:'Dictionary',selected:null,saved:load('gharo-saved'),recent:load('gharo-recent'),menu:false,geez:localStorage.getItem('gharo-geez-kbd')==='1',shown:PAGE};
   const esc = value => String(value ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   const normalize = value => String(value || '').toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
