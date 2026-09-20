@@ -135,21 +135,22 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
     const contains = [];
     for (const entry of entries) {
       const w = normalize(label(entry));
-      const t = entry.t || '', p = entry.p || '';
-      const isExact = w===ql || t===raw || p===raw || (geezQl && (t===geezQl || p===geezQl));
+      const t = entry.t || '', p = entry.p || '', a = entry.a || '', a2 = entry.a2 || '';
+      const isExact = w===ql || t===raw || p===raw || a===raw || a2===raw || (geezQl && (t===geezQl || p===geezQl));
       const wordStarts = w.startsWith(ql);
       const wordContains = !wordStarts && w.includes(ql);
       const tigreStarts = t.startsWith(raw) || (geezQl && t.startsWith(geezQl));
       const pronStarts = p.startsWith(raw) || (geezQl && p.startsWith(geezQl));
+      const arabicStarts = a.startsWith(raw) || a2.startsWith(raw);
       const tigreHit = tigreStarts || t.includes(raw) || (geezQl && t.includes(geezQl));
       const pronHit = pronStarts || p.includes(raw) || (geezQl && p.includes(geezQl));
-      const arabicHit = (entry.a && entry.a.includes(raw)) || (entry.a2 && entry.a2.includes(raw));
+      const arabicHit = arabicStarts || a.includes(raw) || a2.includes(raw);
       if (isExact) exact.push(entry);
       else if (wordStarts) starts.push(entry);
-      // A word that opens with the searched ትግረ/pronunciation spelling is a
-      // closer match than one that merely contains it somewhere inside —
+      // A word that opens with the searched ትግረ/pronunciation/Arabic spelling
+      // is a closer match than one that merely contains it somewhere inside —
       // rank it right after exact English-headword matches.
-      else if (tigreStarts || pronStarts) near.push(entry);
+      else if (tigreStarts || pronStarts || arabicStarts) near.push(entry);
       else if (wordContains || tigreHit || pronHit || arabicHit) contains.push(entry);
     }
     const byWord = (a,b) => normalize(label(a)).localeCompare(normalize(label(b)));
