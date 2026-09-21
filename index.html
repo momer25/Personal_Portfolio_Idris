@@ -21,8 +21,8 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
   .share-menu[hidden]{display:none}
   .share-menu a{display:block;padding:8px 12px;border-radius:6px;color:#1f2937;text-decoration:none;font-size:14px;white-space:nowrap}
   .share-menu a:hover{background:#f1f5f9}
-  .site-footer a.footer-email{justify-content:flex-start;align-items:center;font-size:60px;line-height:1;text-decoration:none;margin-top:4px}
-  .site-footer a.footer-email span{font-size:60px;line-height:1;color:inherit}
+  .site-footer a.footer-email{justify-content:flex-start;align-items:center;font-size:46px;line-height:1;text-decoration:none;margin-top:4px}
+  .site-footer a.footer-email span{font-size:46px;line-height:1;color:inherit}
   .search-box>.search-icon{color:#52708f;pointer-events:none;position:absolute;left:17px;font-size:17px;line-height:1}
 </style>
 </head>
@@ -194,7 +194,7 @@ html{background:#f4f7fb} .site-shell{min-height:100vh} .brand-mark img{object-fi
             ${state.tab==='Dictionary' ? dictionaryResults(active, relatedList, visibleList, found.hasExact) : state.tab==='Saved' ? archive('Saved words', state.saved) : archive('Recent searches', state.recent)}
           </section><aside class="sidebar"><div class="side-card"><span class="panel-label">THE ARCHIVE</span><h2>Words, kept close.</h2><p>A focused multilingual reference for quick lookup, careful reading, and everyday language learning across Eritrea and eastern Sudan.</p><div class="side-rule"></div><div class="side-stat"><strong>25,792</strong><span>offline entries</span></div><div class="side-stat"><strong>3</strong><span>languages, one archive</span></div></div><div class="ad-slot side-ad"><span>ADVERTISEMENT</span><small>Clearly labeled sponsor placement</small></div><div class="side-card premium-side"><span class="panel-label">GHARO PLUS · COMING SOON</span><h2>Build a study shelf.</h2><p>A future premium plan can add curated study lists, sync, and advanced lookup tools without interrupting the free dictionary.</p><button id="notify">Notify me</button></div></aside></div></div>
         </main>
-        <footer class="site-footer" id="contact"><div class="footer-grid"><div><span class="footer-mark">GHARO</span><h3>Language, kept in reach.</h3><p>A practical English–Tigre–Arabic dictionary project by Mohamedidris Hamed Omer.</p></div><div><h4>Explore</h4><a href="#dictionary" data-tab="Dictionary">Dictionary</a><a href="#books">Books</a><a href="#contact">Contact</a></div><div><h4>Languages</h4><span>English</span><span>Tigre</span><span>Arabic</span></div><div><h4>Contact</h4><a href="mailto:gharo@gmail.com" class="footer-email" aria-label="Email"><span aria-hidden="true">✉</span></a></div></div><div class="footer-bottom">© ${new Date().getFullYear()} Mohamedidris Hamed Omer. GHARO Dictionary. All rights reserved.</div></footer>
+        <footer class="site-footer" id="contact"><div class="footer-grid"><div><span class="footer-mark">GHARO</span><h3>Language, kept in reach.</h3><p>A practical English–Tigre–Arabic dictionary project by Mohamedidris Hamed Omer.</p></div><div><h4>Explore</h4><a href="#dictionary" data-tab="Dictionary">Dictionary</a><a href="#books">Books</a></div><div><h4>Languages</h4><span>English</span><span>Tigre</span><span>Arabic</span></div><div><h4>Contact</h4><a href="mailto:gharo@gmail.com" class="footer-email" aria-label="Email"><span aria-hidden="true">✉</span></a></div></div><div class="footer-bottom">© ${new Date().getFullYear()} Mohamedidris Hamed Omer. GHARO Dictionary. All rights reserved.</div></footer>
       </div>`;
     bind();
     if(focusedQuery){
